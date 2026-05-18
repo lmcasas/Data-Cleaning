@@ -2,6 +2,8 @@
 
 This project implements a data cleaning pipeline for Data Science job postings. The pipeline processes raw data and applies sequential transformations to generate a clean and structured dataset.
 
+Dataset: https://www.kaggle.com/datasets/rashikrahmanpritom/data-science-job-posting-on-glassdoor/data?select=Uncleaned_DS_jobs.csv
+
 ## Pipeline Steps
 
 The pipeline consists of 7 steps executed in order:
