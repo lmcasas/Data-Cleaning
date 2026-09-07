@@ -1,5 +1,6 @@
 import sys
 import time
+from src import validate as step_06
 
 from src import ingest          as step_00
 from src import job_title       as step_01
@@ -10,7 +11,7 @@ from src import company_info    as step_05
 from src import validate        as step_06
 
 
-FINAL_OUTPUT = "data/processed/DS_jobs_clean.csv"
+FINAL_OUTPUT = step_06.LATEST_OUT
 
 
 # Pipeline

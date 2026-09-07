@@ -20,15 +20,12 @@ COLUMNS_WITH_SENTINEL = [
 
 def replace_sentinel(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     """
-    Replaces -1 (string or numeric) with Unknown/0 in the specified columns.
-    Glassdoor uses -1 to indicate unknown data.
+    Replace Glassdoor's -1 sentinel values with appropriate missing-value representations.
     """
     for col in columns:
         if col not in df.columns:
             print(f"[company_info]  Column not found: '{col}' — skipping")
             continue
-
-        before = (df[col].astype(str).str.strip() == "-1").sum()
 
         df[col] = df[col].replace("-1", "Unknown")  
         df[col] = df[col].replace(-1, pd.NA)      

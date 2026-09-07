@@ -71,26 +71,23 @@ def check_ranges(df: pd.DataFrame) -> bool:
     """Validate numeric ranges for salary and rating."""
     failed = False
 
-    if "Salary_Min" in df.columns:
-        bad = df["Salary_Min"].dropna()
-        bad = bad[(bad < SALARY_VALID[0]) | (bad > SALARY_VALID[1])]
+    if all(col in df.columns for col in ["Salary_Min", "Salary_Max", "Salary_Avg"]):
+        bad = df[
+            df[["Salary_Min", "Salary_Max", "Salary_Avg"]].notna().all(axis=1)
+            & (
+                (df["Salary_Avg"] < df["Salary_Min"])
+                | (df["Salary_Avg"] > df["Salary_Max"])
+            )
+        ]
 
         if len(bad) > 0:
-            print(f"[validate]  Salary_Min out of range ({len(bad)} rows)")
-            print(bad.value_counts())
+            print(
+                f"[validate] Salary_Avg outside Salary_Min/Salary_Max "
+                f"({len(bad)} rows)"
+            )
             failed = True
         else:
-            print("[validate] Salary_Min within range")
-
-    if "Salary_Max" in df.columns:
-        bad = df["Salary_Max"].dropna()
-        bad = bad[(bad < SALARY_VALID[0]) | (bad > SALARY_VALID[1])]
-
-        if len(bad) > 0:
-            print(f"[validate]  Salary_Max out of range ({len(bad)} rows)")
-            failed = True
-        else:
-            print("[validate] Salary_Max within range")
+            print("[validate] Salary_Avg within salary range")
 
     if "Rating" in df.columns:
         bad = df["Rating"].dropna()
@@ -129,13 +126,17 @@ def run(df: pd.DataFrame = None) -> pd.DataFrame:
         df = pd.read_csv(INTERIM_IN)
 
     print("\n[validate] ── Checking columns ─────────────────")
-    check_columns(df)
+    columns_ok = check_columns(df)
 
     print("\n[validate] ── Checking nulls ───────────────────")
-    check_nulls(df)
+    nulls_ok = check_nulls(df)
 
     print("\n[validate] ── Checking ranges ──────────────────")
-    check_ranges(df)
+    ranges_ok = check_ranges(df)
+
+    if not all([columns_ok, nulls_ok, ranges_ok]):
+        print("\n[validate] Validation failed. Dataset was not exported.")
+        raise ValueError("Final dataset failed validation checks.")
 
     summary(df)
 

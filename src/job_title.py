@@ -18,40 +18,47 @@ def clean_title(title: str) -> str:
 
     return title.strip()
 
-
-import pandas as pd
-import re
-
 TITLE_RULES = {
-    "Data Scientist": ["data scientist"],
+    "Data Scientist": [
+        r"\bdata scientist\b"
+    ],
     "Machine Learning Engineer": [
-        "machine learning engineer", 
-        "ml engineer",
-        r"ml.*engineer", 
-        r"machine learning.*engineer"
+        r"\bmachine learning engineer\b",
+        r"\bml engineer\b",
+        r"\bml.*engineer\b",
+        r"\bmachine learning.*engineer\b"
     ],
     "Machine Learning Scientist": [
-        "machine learning scientist", 
-        "ml scientist",
-        r"ml.*scientist",
-        r"machine learning.*scientist"
+        r"\bmachine learning scientist\b",
+        r"\bml scientist\b",
+        r"\bml.*scientist\b",
+        r"\bmachine learning.*scientist\b"
     ],
-    "Data Engineer": ["data engineer"],
+    "Data Engineer": [
+        r"\bdata engineer\b"
+    ],
     "Data Analyst": [
-        "data analyst", 
-        "business data analyst", 
-        "bi analyst",
-        r"bi.*analyst",
-        "business intelligence analyst"
+        r"\bdata analyst\b",
+        r"\bbusiness data analyst\b",
+        r"\bbi analyst\b",
+        r"\bbi.*analyst\b",
+        r"\bbusiness intelligence analyst\b"
     ],
-    "Business Intelligence Analyst": ["business intelligence"],
-    "Analytics Manager": ["analytics manager"],
+    "Business Intelligence Analyst": [
+        r"\bbusiness intelligence\b"
+    ],
+    "Analytics Manager": [
+        r"\banalytics manager\b"
+    ],
     "Software Engineer (Data)": [
-        r"software engineer.*data",
-        r"data.*software engineer"
+        r"\bsoftware engineer.*data\b",
+        r"\bdata.*software engineer\b"
     ],
-    "Research Scientist": ["research scientist"],
+    "Research Scientist": [
+        r"\bresearch scientist\b"
+    ],
 }
+
 
 def categorize_title(cleaned_title: str) -> str:
     if pd.isna(cleaned_title) or cleaned_title == "":
@@ -61,19 +68,16 @@ def categorize_title(cleaned_title: str) -> str:
     
     for category, patterns in TITLE_RULES.items():
         for pattern in patterns:
-            if isinstance(pattern, str) and pattern.startswith('r\\'):
-                pattern_clean = pattern[2:]  
-                if re.search(pattern_clean, title_lower):
-                    return category
-            elif pattern in title_lower:
-                if category == "Data Scientist" and "data scientist" in title_lower:
-                    if not any(x in title_lower for x in ['machine', 'research']):
-                        return category
-                else:
-                    return category
-    
+            if re.search(pattern, title_lower):
+                if category == "Data Scientist":
+                    if any(term in title_lower for term in ["machine", "research"]):
+                        continue
+
+                return category
+
     if "scientist" in title_lower:
-        excluded_terms = ['data', 'research', 'machine learning', 'ml']
+        excluded_terms = ["data", "research", "machine learning", "ml"]
+
         if not any(term in title_lower for term in excluded_terms):
             return "Scientist (Other)"
     
@@ -88,10 +92,10 @@ def extract_level(title: str) -> str:
     """
     Extract seniority level from the job title.
     """
-    if pd.isna(title):
+    if pd.isna(title) or title == "":
         return "Unknown"
 
-    words = set(title.split())
+    words = set(title.lower().split())
 
     if words & SENIOR_WORDS:
         return "Senior"
@@ -99,7 +103,7 @@ def extract_level(title: str) -> str:
     if words & JUNIOR_WORDS:
         return "Junior"
 
-    return "Mid"
+    return "Unknown"
 
 
 def clean_job_title(df: pd.DataFrame) -> pd.DataFrame:
